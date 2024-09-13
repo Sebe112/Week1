@@ -12,6 +12,7 @@ import APL.AST (Exp(..), VName)
 data Val
   = ValInt Integer
   | ValBool Bool
+  | ValFun Env VName Exp
   deriving (Eq, Show)
 
 type Env = [(VName, Val)]
@@ -85,3 +86,15 @@ eval env (Let var e1 e2) =
   case eval env e1 of
     Left err -> Left err
     Right v -> eval (envExtend var v env) e2
+
+eval env (Lambda v e) = Right $ ValFun env v e
+
+eval env (Apply e1 e2) =
+  case eval env e1 of
+    Left err -> Left err
+    Right (ValFun env1 v body) ->
+      case eval env e2 of
+        Left err -> Left err
+        Right argVal ->
+          eval ((v, argVal) : env1) body
+    Right _ -> Left $ "Expected a function in apply" 
