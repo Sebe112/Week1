@@ -65,5 +65,13 @@ tests =
               (Add (CstInt 2) (CstInt 3))
               (Let "x" (CstBool True) (Var "x"))
           )
-          @?= Right (ValBool True)
+          @?= Right (ValBool True),
+
+      testCase "TryCatch with Add" $
+        eval envEmpty (TryCatch (Add (CstInt 2) (CstInt 3)) (CstInt 42))
+          @?= Right (ValInt 5),
+
+      testCase "TryCatch catches error" $
+        eval envEmpty (TryCatch (Var "x") (CstInt 42))
+          @?= Right (ValInt 42)
     ]

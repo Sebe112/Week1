@@ -98,3 +98,8 @@ eval env (Apply e1 e2) =
         Right argVal ->
           eval ((v, argVal) : env1) body
     Right _ -> Left $ "Expected a function in apply" 
+
+eval env (TryCatch e1 e2) =
+  case eval env e1 of
+    Right val -> Right val
+    Left _ -> eval env e2

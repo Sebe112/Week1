@@ -21,4 +21,5 @@ data Exp
   | Let VName Exp Exp
   | Lambda VName Exp
   | Apply Exp Exp
+  | TryCatch Exp Exp
   deriving (Eq, Show)
