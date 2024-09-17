@@ -4,6 +4,7 @@ module APL.Eval
     Env,
     envEmpty,
     eval,
+    printExp,
   )
 where
 
@@ -45,6 +46,7 @@ evalIntBinOp' f env e1 e2 =
     f' x y = Right $ f x y
 
 eval :: Env -> Exp -> Either Error Val
+printExp :: Exp -> String
 
 eval _env (CstInt x) = Right $ ValInt x
 eval _env (CstBool b) = Right $ ValBool b
@@ -103,3 +105,18 @@ eval env (TryCatch e1 e2) =
   case eval env e1 of
     Right val -> Right val
     Left _ -> eval env e2
+
+printExp (CstInt x) = "Integer " ++ show x
+printExp (CstBool x) = "Boolean " ++ show x
+printExp (Add e1 e2) = "(" ++ printExp e1 ++ " + " ++ printExp e2 ++ ")"
+printExp (Sub e1 e2) = "(" ++ printExp e1 ++ " - " ++ printExp e2 ++ ")"
+printExp (Mul e1 e2) = "(" ++ printExp e1 ++ " * " ++ printExp e2 ++ ")"
+printExp (Div e1 e2) = "(" ++ printExp e1 ++ " / " ++ printExp e2 ++ ")"
+printExp (Pow e1 e2) = "(" ++ printExp e1 ++ " ^ " ++ printExp e2 ++ ")"
+printExp (Eql e1 e2) = "(" ++ printExp e1 ++ " = " ++ printExp e2 ++ ")"
+printExp (If e1 e2 e3) = "(if " ++ printExp e1 ++ " then " ++ printExp e2 ++ " else " ++ printExp e3 ++ ")"
+printExp (Var vName) = "Var " ++ vName
+printExp (Let vName e1 e2) = "let " ++ vName ++ " = " ++ printExp e1 ++ " in " ++ printExp e2
+printExp (Lambda vName body) = "\\" ++ vName ++ " -> " ++ printExp body
+printExp (Apply e1 e2) = "(" ++ printExp e1 ++ " " ++ printExp e2 ++ ")"
+printExp (TryCatch e1 e2) = "(try " ++ printExp e1 ++ " catch " ++ printExp e2 ++ ")"

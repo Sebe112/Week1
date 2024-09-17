@@ -1,7 +1,7 @@
 module APL.Eval_Tests (tests) where
 
 import APL.AST (Exp (..))
-import APL.Eval (Val (..), envEmpty, eval)
+import APL.Eval (Val (..), envEmpty, eval, printExp)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (testCase, (@?=))
 
@@ -66,12 +66,42 @@ tests =
               (Let "x" (CstBool True) (Var "x"))
           )
           @?= Right (ValBool True),
-
+      --
+      testCase "Lambda expression evaluation" $
+        case eval envEmpty (Lambda "x" (Add (Var "x") (CstInt 1))) of
+          Right (ValFun _ "x" body) -> printExp body @?= "(Var x + Integer 1)"
+          _ -> error "Expected a ValFun",
+      --
+      testCase "Apply Lambda function" $
+        eval envEmpty (Apply (Lambda "x" (Add (Var "x") (CstInt 1))) (CstInt 5))
+          @?= Right (ValInt 6),
+      --
       testCase "TryCatch with Add" $
         eval envEmpty (TryCatch (Add (CstInt 2) (CstInt 3)) (CstInt 42))
           @?= Right (ValInt 5),
-
+      --
       testCase "TryCatch catches error" $
         eval envEmpty (TryCatch (Var "x") (CstInt 42))
-          @?= Right (ValInt 42)
+          @?= Right (ValInt 42),
+      -- Test for printing a simple integer
+      testCase "CstInt 5" $
+        printExp (CstInt 5) @?= "Integer 5",
+      -- Test for printing a boolean value
+      testCase "CstBool True" $
+        printExp (CstBool True) @?= "Boolean True",
+      -- Test for addition
+      testCase "Addition" $
+        printExp (Add (CstInt 2) (CstInt 3)) @?= "(Integer 2 + Integer 3)",
+      -- Test for Let expression
+      testCase "Let expression" $
+        printExp (Let "x" (CstInt 5) (Add (Var "x") (CstInt 3)))
+          @?= "let x = Integer 5 in (Var x + Integer 3)",
+      -- Test for Lambda expression
+      testCase "Lambda expression" $
+        printExp (Lambda "x" (Mul (Var "x") (CstInt 2)))
+          @?= "\\x -> (Var x * Integer 2)",
+      -- Test for TryCatch expression
+      testCase "TryCatch expression" $
+        printExp (TryCatch (Div (Var "x") (CstInt 0)) (CstInt 42))
+          @?= "(try (Var x / Integer 0) catch Integer 42)"
     ]
